@@ -1,0 +1,170 @@
+﻿<Window x:Class="ITLab3.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RSA Demo (.NET 10)" Height="650" Width="850"
+        Background="#F4F7FA" FontFamily="Segoe UI">
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#3B82F6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#94A3B8"/>
+                                <Setter Property="Foreground" Value="#E2E8F0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="#10B981"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#059669"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TabControl Background="White" BorderBrush="#E2E8F0" BorderThickness="1">
+            <TabItem Header="Encrypt" Padding="15,8" FontSize="14">
+                <Grid Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="File to encrypt:" VerticalAlignment="Center" Margin="5" Foreground="#475569"/>
+                    <TextBox x:Name="TxtEncryptFilePath" Grid.Column="1" IsReadOnly="True" Background="#F8FAFC"/>
+                    <Button Content="Browse" Grid.Column="2" Width="120" Click="BtnBrowseEncrypt_Click"/>
+
+                    <TextBlock Text="p (Prime):" Grid.Row="1" VerticalAlignment="Center" Margin="5" Foreground="#475569"/>
+                    <TextBox x:Name="TxtP" Grid.Row="1" Grid.Column="1" TextChanged="EncryptInputs_TextChanged" PreviewTextInput="FilterNonNumericInputs" DataObject.Pasting="FilterNonNumericPasting"/>
+
+                    <Button Content="Auto-Generate" Grid.Row="1" Grid.RowSpan="3" Grid.Column="2" 
+                            Style="{StaticResource SecondaryButton}" Click="BtnGenerate_Click"/>
+
+                    <TextBlock Text="q (Prime):" Grid.Row="2" VerticalAlignment="Center" Margin="5" Foreground="#475569"/>
+                    <TextBox x:Name="TxtQ" Grid.Row="2" Grid.Column="1" TextChanged="EncryptInputs_TextChanged" PreviewTextInput="FilterNonNumericInputs" DataObject.Pasting="FilterNonNumericPasting"/>
+
+                    <TextBlock Text="Secret Key (Ks):" Grid.Row="3" VerticalAlignment="Center" Margin="5" Foreground="#475569"/>
+                    <TextBox x:Name="TxtKsEncrypt" Grid.Row="3" Grid.Column="1" TextChanged="EncryptInputs_TextChanged" PreviewTextInput="FilterNonNumericInputs" DataObject.Pasting="FilterNonNumericPasting"/>
+
+                    <StackPanel Grid.Row="4" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="5,15,5,5">
+                        <TextBlock Text="Calculated r: " FontWeight="SemiBold" Foreground="#334155"/>
+                        <TextBlock x:Name="TxtCalcR" Text="-" Margin="0,0,25,0" Foreground="#2563EB" FontWeight="Bold"/>
+                        <TextBlock Text="Calculated Open Key (Ko): " FontWeight="SemiBold" Foreground="#334155"/>
+                        <TextBlock x:Name="TxtCalcKo" Text="-" Foreground="#2563EB" FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <TextBlock x:Name="TxtError" Grid.Row="5" Grid.ColumnSpan="3" Foreground="#EF4444" Margin="5,0,5,10" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtBase10Output" Grid.Row="6" Grid.ColumnSpan="3" 
+                             TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Background="#F8FAFC"
+                             ToolTip="Encrypted file contents in Base-10"/>
+
+                    <Button x:Name="BtnEncrypt" Content="Encrypt &amp; Save" Grid.Row="7" Grid.ColumnSpan="3" Height="40" Margin="5,15,5,5" IsEnabled="False" Click="BtnEncrypt_Click"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Decrypt" Padding="15,8" FontSize="14">
+                <Grid Margin="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="File to decrypt:" VerticalAlignment="Center" Margin="5" Foreground="#475569"/>
+                    <TextBox x:Name="TxtDecryptFilePath" Grid.Column="1" IsReadOnly="True" Background="#F8FAFC"/>
+                    <Button Content="Browse" Grid.Column="2" Width="120" Click="BtnBrowseDecrypt_Click"/>
+
+                    <TextBlock Text="Modulus (r):" Grid.Row="1" VerticalAlignment="Center" Margin="5" Foreground="#475569"/>
+                    <TextBox x:Name="TxtRDecrypt" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" TextChanged="DecryptInputs_TextChanged" PreviewTextInput="FilterNonNumericInputs" DataObject.Pasting="FilterNonNumericPasting"/>
+
+                    <TextBlock Text="Secret Key (Ks):" Grid.Row="2" VerticalAlignment="Center" Margin="5" Foreground="#475569"/>
+                    <TextBox x:Name="TxtKsDecrypt" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" TextChanged="DecryptInputs_TextChanged" PreviewTextInput="FilterNonNumericInputs" DataObject.Pasting="FilterNonNumericPasting"/>
+
+                    <TextBlock x:Name="TxtErrorDecrypt" Grid.Row="3" Grid.ColumnSpan="3" Foreground="#EF4444" Margin="5,15,5,10" FontWeight="SemiBold"/>
+
+                    <TextBox x:Name="TxtBase10OutputDecrypt" Grid.Row="4" Grid.ColumnSpan="3" 
+                             TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Background="#F8FAFC"
+                             ToolTip="Decrypted file contents in Base-10"/>
+
+                    <Button x:Name="BtnDecrypt" Content="Decrypt &amp; Save" Grid.Row="5" Grid.ColumnSpan="3" Height="40" Margin="5,15,5,5" IsEnabled="False" Click="BtnDecrypt_Click"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <ProgressBar x:Name="PrgStatus" Grid.Row="1" Height="8" Margin="0,15,0,0" Minimum="0" Maximum="100" Visibility="Collapsed" Foreground="#10B981" BorderThickness="0" Background="#E2E8F0"/>
+    </Grid>
+</Window>
