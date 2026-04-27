@@ -118,12 +118,12 @@ namespace ITLab3
                 if (secretKey <= 1)
                 {
                     secretKeyValid = false;
-                    TxtErrorDecrypt.Text += "Ks must be above 1.";
+                    TxtErrorDecrypt.Text = "Ks must be above 1.";
                 }
                 else if (rValid && secretKey >= r)
                 {
                     secretKeyValid = false;
-                    TxtErrorDecrypt.Text += "Ks must be below r.";
+                    TxtErrorDecrypt.Text = "Ks must be below r.";
                 }
             }
             TxtKsDecrypt.Background = secretKeyValid || string.IsNullOrEmpty(TxtKsDecrypt.Text) ? Brushes.White : ERROR_RED;
