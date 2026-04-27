@@ -62,37 +62,33 @@ namespace ITLab3
                 if (!rValid)
                 {
                     TxtCalcR.Foreground = Brushes.Red;
-                    TxtError.Text = "Requirement: 255 < r (p*q) <= 65535 to fit 8-bit into 16-bit blocks. ";
+                    TxtError.Text = "Requirement: 255 < r (p*q) <= 65535 to fit 8-bit into 16-bit blocks.";
                 }
                 else TxtCalcR.Foreground = CORRECT_BLUE;
             }
             else TxtCalcR.Text = "-";
 
-            bool secretKeyValid = long.TryParse(TxtKsEncrypt.Text, out long kc);
+            bool secretKeyValid = long.TryParse(TxtKsEncrypt.Text, out long secretKey);
             bool isCoprime = false;
 
+            TxtCalcKo.Text = "-";
+            TxtKsEncrypt.Background = ERROR_RED;
             if (pValid && qValid && secretKeyValid && rValid)
             {
                 long phi = (p - 1) * (q - 1);
-                isCoprime = EuclidEx(phi, kc, out _, out long openKey) == 1;
 
-                if (isCoprime)
+                if (1 < secretKey && secretKey < phi)
                 {
-                    TxtCalcKo.Text = (openKey < 0 ? openKey + phi : openKey).ToString();
-                    TxtKsEncrypt.Background = Brushes.White;
+                    isCoprime = EuclidEx(phi, secretKey, out _, out long openKey) == 1;
+
+                    if (isCoprime)
+                    {
+                        TxtCalcKo.Text = (openKey < 0 ? openKey + phi : openKey).ToString();
+                        TxtKsEncrypt.Background = Brushes.White;
+                    }
+                    else TxtError.Text = "Ks must be coprime to phi(r).";
                 }
-                else
-                {
-                    TxtCalcKo.Text = "-";
-                    TxtError.Text += "Ks must be coprime to phi(r). ";
-                    TxtKsEncrypt.Background = ERROR_RED;
-                }
-            }
-            else
-            {
-                TxtCalcKo.Text = "-";
-                if (secretKeyValid && !isCoprime && r > 255)
-                    TxtKsEncrypt.Background = ERROR_RED;
+                else TxtError.Text = (1 < secretKey) ? "Ks must be below phi(r)." : "Ks must be above 1.";
             }
 
             bool fileValid = false;
@@ -101,7 +97,7 @@ namespace ITLab3
                 long len = new FileInfo(TxtEncryptFilePath.Text).Length;
                 
                 if (len == 0)
-                    TxtError.Text += "Selected file is empty.";
+                    TxtError.Text = "Selected file is empty.";
                 else
                     fileValid = true;
             }
@@ -111,24 +107,40 @@ namespace ITLab3
 
         private void DecryptInputs_TextChanged(object? sender, TextChangedEventArgs? e)
         {
-            bool rValid = long.TryParse(TxtRDecrypt.Text, out _);
-            bool kcValid = long.TryParse(TxtKsDecrypt.Text, out _);
+            bool rValid = long.TryParse(TxtRDecrypt.Text, out long r);
+            bool secretKeyValid = long.TryParse(TxtKsDecrypt.Text, out long secretKey);
             TxtErrorDecrypt.Text = "";
+
+            TxtRDecrypt.Background = rValid || string.IsNullOrEmpty(TxtRDecrypt.Text) ? Brushes.White : ERROR_RED;
+
+            if (secretKeyValid)
+            {
+                if (secretKey <= 1)
+                {
+                    secretKeyValid = false;
+                    TxtErrorDecrypt.Text += "Ks must be above 1.";
+                }
+                else if (rValid && secretKey >= r)
+                {
+                    secretKeyValid = false;
+                    TxtErrorDecrypt.Text += "Ks must be below r.";
+                }
+            }
+            TxtKsDecrypt.Background = secretKeyValid || string.IsNullOrEmpty(TxtKsDecrypt.Text) ? Brushes.White : ERROR_RED;
 
             bool fileValid = false;
             if (!string.IsNullOrWhiteSpace(TxtDecryptFilePath.Text) && File.Exists(TxtDecryptFilePath.Text))
             {
                 long len = new FileInfo(TxtDecryptFilePath.Text).Length;
-
                 if (len == 0)
                     TxtErrorDecrypt.Text = "Selected file is empty.";
                 else if (len % 2 != 0)
-                    TxtErrorDecrypt.Text = "Invalid file: encrypted files must have an even length (2n bytes).";
+                    TxtErrorDecrypt.Text = "File must be even length (2n bytes).";
                 else
                     fileValid = true;
             }
 
-            BtnDecrypt.IsEnabled = rValid && kcValid && fileValid;
+            BtnDecrypt.IsEnabled = rValid && secretKeyValid && fileValid;
         }
 
         private void BtnGenerate_Click(object sender, RoutedEventArgs e)
