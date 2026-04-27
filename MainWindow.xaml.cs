@@ -192,7 +192,7 @@ namespace ITLab3
 
             if (filePath == _cachedFilePath && _cachedEncryptedBytes != null)
             {
-                SaveEncryptedFile(_cachedEncryptedBytes);
+                SaveEncryptedFile(_cachedEncryptedBytes, filePath);
                 return;
             }
 
@@ -222,7 +222,7 @@ namespace ITLab3
 
                 TxtBase10Output.Text = base10String;
 
-                SaveEncryptedFile(_cachedEncryptedBytes);
+                SaveEncryptedFile(_cachedEncryptedBytes, filePath);
             }
             catch (Exception ex)
             {
@@ -263,9 +263,16 @@ namespace ITLab3
             return (ms.ToArray(), base10Display.ToString());
         }
 
-        private static void SaveEncryptedFile(byte[] data)
+        private static void SaveEncryptedFile(byte[] data, string originalFilePath)
         {
-            SaveFileDialog dlg = new() { Title = "Save Encrypted File" };
+            string defaultName = Path.GetFileName(originalFilePath) + ".crypt";
+
+            SaveFileDialog dlg = new()
+            {
+                Title = "Save Encrypted File",
+                FileName = defaultName,
+                Filter = "Encrypted Files (*.crypt)|*.crypt|All Files (*.*)|*.*"
+            };
 
             if (dlg.ShowDialog() == true)
                 File.WriteAllBytes(dlg.FileName, data);
@@ -290,7 +297,15 @@ namespace ITLab3
 
                 TxtBase10OutputDecrypt.Text = base10String;
 
-                SaveFileDialog dlg = new() { Title = "Save Decrypted File" };
+                string defaultFileName = Path.GetFileName(filePath);
+                if (defaultFileName.EndsWith(".crypt", StringComparison.OrdinalIgnoreCase))
+                    defaultFileName = defaultFileName[..^6]; // removes the last 6 characters
+
+                SaveFileDialog dlg = new()
+                {
+                    Title = "Save Decrypted File",
+                    FileName = defaultFileName
+                };
 
                 if (dlg.ShowDialog() == true)
                     File.WriteAllBytes(dlg.FileName, decryptedData);
