@@ -23,6 +23,7 @@ namespace ITLab3
         public MainWindow()
         {
             InitializeComponent();
+            EuclidEx(61, 34, out _, out _);
         }
 
         private void FilterNonNumericInputs(object sender, TextCompositionEventArgs e)
@@ -377,11 +378,12 @@ namespace ITLab3
             {
                 while (z1 % 2 == 0)
                 {
-                    z1 /= 2;
                     a1 = (a1 * a1) % n;
+                    z1 /= 2;
                 }
-                z1--;
+
                 x = (x * a1) % n;
+                z1--;
             }
             return x;
         }
